@@ -1,24 +1,18 @@
 const express = require('express');
 const sequelize = require('./config/database.js');
-const Task = require('./tasks/Task.js');
+const api = require('./routes/apiRoutes.js')
 const PORT = 3000;
 
+
 const app = express();
-const taskRoutes = require('./tasks/taskRoutes');
 
 app.use(express.json());
+app.use("/api", api)
 
 
 sequelize.sync()
     .then(()=>console.log("Database Synced"))
     .catch(err=>console.error("DB Sync Error", err));
-
-
-app.get('/api/tasks',  taskRoutes);
-app.post('/api/tasks', taskRoutes);
-app.get('/api/tasks/:id',  taskRoutes);
-app.put('/api/tasks/:id', taskRoutes);
-app.delete('/api/tasks/:id', taskRoutes);
 
 
 app.listen(PORT, ()=>{
