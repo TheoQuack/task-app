@@ -4,7 +4,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 module.exports = function (req,res,next) {
 
     const auth = req.headers.authorization;
-    console.log(auth);
     if (!auth || !auth.startsWith('Bearer ')){
         return res.status(401).json({ error: 'Missing or Invalid Token' });
     }
@@ -15,9 +14,6 @@ module.exports = function (req,res,next) {
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = decoded;
         next();
-        // const decoded = jwt.verify(token, JWT_SECRET);
-        // req.user = decoded;
-        // next();
     }
 
     catch (err) {

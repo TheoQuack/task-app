@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 const User = require('./User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 
 async function RegisterUser(req,res) {
 
@@ -13,8 +13,8 @@ async function RegisterUser(req,res) {
     
     console.log(email);
 
-    if (name == null || email == null || password == null){
-        res.status(403).json({ error: 'Lacking Credentials '});
+    if ( email == undefined || name == undefined || password == undefined ){
+        res.status(403).json({ message: 'Lacking Credentials'});
     }
 
     const exist = await User.findOne({ where: { email } });
