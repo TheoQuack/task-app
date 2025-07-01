@@ -8,16 +8,25 @@ const JWT_SECRET = process.env.JWT_SECRET || 'default secret';
 
 async function RegisterUser(req,res) {
 
+    try {
     const {name, email, password, role, birthDate} = req.body;
+    
+    console.log(email);
+
+    if (name == null || email == null || password == null){
+        res.status(403).json({ error: 'Lacking Credentials '});
+    }
 
     const exist = await User.findOne({ where: { email } });
-    if (exist) return res.status(400).json({ error: "email already registered" });
+    if (exist) return res.status(400).json({ error: 'email already registered' });
 
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({name, role, birthDate, email, password: hash });
 
-    res.status(201).json({ message: "User Registered", userID: user.id });
-
+    res.status(201).json({ message: 'User Registered', userID: user.id });
+    } catch(err) {
+        console.log(err);
+    }
 };
 
 async function LoginUser(req,res) {
@@ -30,10 +39,8 @@ async function LoginUser(req,res) {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: "Invalid email or password" });
 
-
     const token = jwt.sign({ userID: user.id }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ token });
-
 
 };
 
@@ -71,4 +78,4 @@ async function DeleteUser (req,res) {
 
 
 
-module.exports = { GetUsers, CreateUser, GetSpecificUser, UpdateUser , DeleteUser, RegisterUser, LoginUser };
+module.exports = { GetUsers, CreateUser, GetSpecificUser, UpdateUser , DeleteUser, LoginUser, RegisterUser };

@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { GetUsers, GetSpecificUser , UpdateUser, CreateUser, DeleteUser, RegisterUser, LoginUser } = require('./UserController');
+const authGuard = require('../middlwares/authGuard.js');
+const { GetUsers, GetSpecificUser , UpdateUser, CreateUser, DeleteUser} = require('./UserController');
+
+router.use(authGuard);
 
 router.get('/', GetUsers);
 
@@ -11,10 +14,6 @@ router.get('/:id', GetSpecificUser);
 router.put('/:id',  UpdateUser);
 
 router.delete('/:id', DeleteUser);
-
-router.post('/register', RegisterUser);
-
-router.post('/login', LoginUser);
 
 
 module.exports = router;
