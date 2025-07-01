@@ -25,8 +25,21 @@ const User = sequelize.define('User', {
                 throw new Error ("Cannot be in the past");
             }
         }
+        }
+    },
+
+    email: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
-    }
+
+
+
 }, {timestamps: true});
 
 module.exports = User;

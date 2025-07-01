@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const authGuard = require('../middlwares/authGuard.js');
 const { GetTasks,
      CreateTasks, 
      GetSpecificTask, 
      UpdateTasks, 
      DeleteTasks } = require('./TaskController.js');
 
+
+router.use(authGuard);
 
 router.get('/', GetTasks);
 
