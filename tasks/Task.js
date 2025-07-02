@@ -26,7 +26,12 @@ const Task = sequelize.define('Task', {
             }
         }
     }
+    },
+    userID: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
     }
+
 }, {timestamps: true});
 
 module.exports = Task;

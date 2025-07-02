@@ -10,15 +10,18 @@ async function RegisterUser(req,res) {
 
     try {
     const {name, email, password, role, birthDate} = req.body;
-    
-    console.log(email);
 
     if ( email == undefined || name == undefined || password == undefined ){
         res.status(403).json({ message: 'Lacking Credentials'});
     }
 
-    const exist = await User.findOne({ where: { email } });
-    if (exist) return res.status(400).json({ error: 'email already registered' });
+    const existEmail = await User.findOne({ where: { email } });
+    if (existEmail) return res.status(400).json({ error: 'email already registered' });
+
+    const existName = await User.findOne({ where: { name } });
+    if (existName) return res.status(400).json({ error: 'name already registered' });
+
+
 
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({name, role, birthDate, email, password: hash });
@@ -28,6 +31,7 @@ async function RegisterUser(req,res) {
         console.log(err);
     }
 };
+
 
 async function LoginUser(req,res) {
 
@@ -39,8 +43,9 @@ async function LoginUser(req,res) {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: "Invalid email or password" });
 
-    const token = jwt.sign({ userID: user.id }, JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token });
+    let token = jwt.sign({ userID: user.id }, JWT_SECRET, { expiresIn: '1h' });
+
+    res.json({ "token": token, "userID": user.id });
 
 };
 
@@ -50,6 +55,13 @@ async function GetUsers(req,res) {
 }
 
 async function CreateUser(req,res) {
+
+    const {name, email, password} = req.body;
+
+    if ( email == undefined || name == undefined || password == undefined ){
+        res.status(403).json({ message: 'Lacking Credentials'});
+    }
+
     const task = await User.create(req.body);
     res.status(201).json(task);
 }
@@ -69,7 +81,12 @@ async function UpdateUser (req,res) {
 }
 
 async function DeleteUser (req,res) {
+
     const id = req.params.id;
+    if ( id == undefined ){
+        res.status(403).json({ message: 'Lacking Credentials'});
+    }
+
     const task = await User.findByPk(id);
     if (!task) return res.status(404).json({error: "Not Found"});
     await task.destroy();
