@@ -6,12 +6,10 @@ const Task = sequelize.define('Task', {
     title: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
     },
     status: {
         type: DataTypes.ENUM("pending", "in-progress", "testing", "done"),
         defaultValue: 'pending',
-        
     },
     dueDate: {
         type: DataTypes.DATEONLY,
@@ -25,7 +23,7 @@ const Task = sequelize.define('Task', {
                 throw new Error ("Cannot be in the past");
             }
         }
-    }
+        }
     },
     userID: {
         type: DataTypes.INTEGER,
