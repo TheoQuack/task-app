@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 async function RegisterUser(req,res) {
 
     try {
-    const {name, email, password, role, birthDate} = req.body;
+    let {name, email, password, role, birthDate} = req.body;
 
     if ( email == undefined || name == undefined || password == undefined ){
         res.status(403).json({ message: 'Lacking Credentials'});
@@ -22,11 +22,12 @@ async function RegisterUser(req,res) {
     const existName = await User.findOne({ where: { name } });
     if (existName) return res.status(400).json({ error: 'name already registered' });
     
+    password = password.replace(/ /g, "");
 
-    if (password.replace(/ /g, "").length < 8) return res.status(400).json({ error: 'password too short' });
+    if (password.length < 8) return res.status(400).json({ error: 'password too short' });
 
 
-    const hash = await bcrypt.hash(password.replace(/ /g, ""), 10);
+    const hash = await bcrypt.hash(password, 10);
     const user = await User.create({name, role, birthDate, email, password: hash });
 
     res.status(201).json({ message: 'User Registered', userID: user.id });
