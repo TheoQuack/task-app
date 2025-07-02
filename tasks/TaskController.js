@@ -9,6 +9,10 @@ async function GetTasks (req,res) {
 }
 
 async function CreateTasks (req,res) {
+
+    const {title} = req.body
+    if (title == undefined) return res.status(403).json({ message: 'Lacking Title'});
+
     req.body.userID = req.user.userID;
     console.log(req.body);
     const task = await Task.create(req.body);
@@ -17,14 +21,16 @@ async function CreateTasks (req,res) {
 
 async function GetSpecificTask (req,res) {
     const id = req.params.id;
-    // const task = await Task.findByPk(id);
     const task = await Task.findOne({where:{ userID: req.user.userID, id }})
     task ? res.json(task) : res.status(404).json({error:"Not Found"});
 }
 
 async function UpdateTasks (req,res) {
+
+    const {title} = req.body
+    if (title == undefined) return res.status(403).json({ message: 'Lacking Title'});
+
     const id = req.params.id;
-    // const task = await Task.findByPk(id);
     const task = await Task.findOne({where:{ userID: req.user.userID, id }})
     if (!task) return res.status(404).json({error: "Not Found"});
     await task.update(req.body);
@@ -33,7 +39,6 @@ async function UpdateTasks (req,res) {
 
 async function DeleteTasks (req,res) {
     const id = req.params.id;
-    // const task = await Task.findByPk(id);
     const task = await Task.findOne({where:{ userID: req.user.userID, id }})
     if (!task) return res.status(404).json({error: "Not Found"});
     await task.destroy();
