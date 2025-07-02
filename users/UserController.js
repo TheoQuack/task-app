@@ -3,8 +3,9 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 const User = require('./User');
+require("dotenv").config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 async function RegisterUser(req,res) {
 
@@ -21,7 +22,8 @@ async function RegisterUser(req,res) {
     const existName = await User.findOne({ where: { name } });
     if (existName) return res.status(400).json({ error: 'name already registered' });
     
-    if (password.length < 8) return res.status(400).json({ error: 'password too short' });
+
+    if (password.replace(/ /g, "").length < 8) return res.status(400).json({ error: 'password too short' });
 
 
     const hash = await bcrypt.hash(password, 10);
