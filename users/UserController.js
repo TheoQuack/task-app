@@ -13,7 +13,7 @@ async function RegisterUser(req,res) {
     let {name, email, password, role, birthDate} = req.body;
 
     if ( email == undefined || name == undefined || password == undefined ){
-        res.status(403).json({ message: 'Lacking Credentials'});
+        return res.status(403).json({ message: 'Lacking Credentials'});
     }
 
     const existEmail = await User.findOne({ where: { email } });
@@ -63,7 +63,7 @@ async function CreateUser(req,res) {
     const {name, email, password} = req.body;
 
     if ( email == undefined || name == undefined || password == undefined ){
-        res.status(403).json({ message: 'Lacking Credentials'});
+        return res.status(403).json({ message: 'Lacking Credentials'});
     }
 
     const task = await User.create(req.body);
@@ -87,9 +87,7 @@ async function UpdateUser (req,res) {
 async function DeleteUser (req,res) {
 
     const id = req.params.id;
-    if ( id == undefined ){
-        res.status(403).json({ message: 'Lacking Credentials'});
-    }
+    if (id == undefined) return res.status(403).json({ message: 'Lacking Credentials'});
 
     const task = await User.findByPk(id);
     if (!task) return res.status(404).json({error: "Not Found"});
