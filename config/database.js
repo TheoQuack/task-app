@@ -1,7 +1,8 @@
 const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
 const sequelize = new Sequelize('task_manager_theo', 'theo', 'theo', {
-    host: '192.168.1.85',
+    host: process.env.DATABASE,
     dialect: 'mysql'
 });
 
