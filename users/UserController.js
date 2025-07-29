@@ -17,14 +17,14 @@ async function RegisterUser(req,res) {
     }
 
     const existEmail = await User.findOne({ where: { email } });
-    if (existEmail) return res.status(400).json({ error: 'email already registered' });
+    if (existEmail) return res.status(401).json({ error: 'email already registered' });
 
     const existName = await User.findOne({ where: { name } });
-    if (existName) return res.status(400).json({ error: 'name already registered' });
+    if (existName) return res.status(401).json({ error: 'name already registered' });
     
     password = password.replace(/ /g, "");
 
-    if (password.length < 8) return res.status(400).json({ error: 'password too short' });
+    if (password.length < 8) return res.status(401).json({ error: 'password too short' });
 
 
     const hash = await bcrypt.hash(password, 10);
