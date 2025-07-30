@@ -12,10 +12,6 @@ const Task = sequelize.define('Task', {
                 if (String(value).trim() === '') {
                     throw new Error("Title cannot be empty or contain only whitespace.");
                 }
-            },
-            len: {
-                args: [3, 255], // [minLength, maxLength]
-                msg: "Title must be between 3 and 255 characters long."
             }
         },
     },
@@ -27,9 +23,6 @@ const Task = sequelize.define('Task', {
         type: DataTypes.DATEONLY,
         allowNull: false, // Added: dueDate cannot be null
         validate: {
-            notNull: {
-                msg: "Due Date cannot be empty." // Added: Custom error message for null
-            },
             isFuture(value){
                 const today = new Date();
                 today.setHours(0,0,0,0);
@@ -37,7 +30,13 @@ const Task = sequelize.define('Task', {
                 dueDate.setHours(0,0,0,0);
 
                 if (dueDate < today){
-                    throw new Error ("Cannot be in the past");
+                    throw new Error ("Due date cannot be in the past");
+                }
+            },
+            notEmptyOrWhitespace(value) {
+                console.log(String(value).trim(), 'after trim');
+                if (String(value).trim() === '') {
+                    throw new Error("Due date cannot be empty");
                 }
             }
         }

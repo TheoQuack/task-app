@@ -8,93 +8,129 @@ require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 async function RegisterUser(req,res) {
-
     try {
-    let {name, email, password, role, birthDate} = req.body;
+        let {name, email, password, role, birthDate} = req.body;
 
-    if ( email == undefined || name == undefined || password == undefined ){
-        return res.status(403).json({ message: 'Lacking Credentials'});
-    }
+        if ( email == undefined || name == undefined || password == undefined ){
+            return res.status(403).json({ message: 'Lacking Credentials'});
+        }
 
-    const existEmail = await User.findOne({ where: { email } });
-    if (existEmail) return res.status(401).json({ error: 'email already registered' });
+        const existEmail = await User.findOne({ where: { email } });
+        if (existEmail) return res.status(401).json({ message: 'Email already registered' });
 
-    const existName = await User.findOne({ where: { name } });
-    if (existName) return res.status(401).json({ error: 'name already registered' });
-    
-    password = password.replace(/ /g, "");
+        const existName = await User.findOne({ where: { name } });
+        if (existName) return res.status(401).json({ message: 'Name already registered' });
+        
+        password = password.replace(/ /g, "");
 
-    if (password.length < 8) return res.status(401).json({ error: 'password too short' });
+        if (password.length < 8) return res.status(401).json({ message: 'Password too short' });
 
 
-    const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({name, role, birthDate, email, password: hash });
+        const hash = await bcrypt.hash(password, 10);
+        const user = await User.create({name, role, birthDate, email, password: hash });
 
-    res.status(201).json({ message: 'User Registered', userID: user.id });
-    } catch(err) {
-        console.log(err);
+        res.status(201).json({ message: 'User Registered', userID: user.id });
+    } catch(error) {
+        console.error("Error registering user:", error);
+        if (error.name === 'SequelizeValidationError') {
+            const errors = error.errors.map(err => err.message);
+            return res.status(400).json({ message: 'Validation failed', errors: errors }); 
+        }
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 };
 
 
 async function LoginUser(req,res) {
+    try {
+        const { email, password } = req.body;
 
-    const { email, password } = req.body;
+        const user = await User.findOne({ where: {email} });
+        if (!user) return res.status(400).json({ message: "Invalid email or Password" });
 
-    const user = await User.findOne({ where: {email} });
-    if (!user) return res.status(400).json({ error: "Invalid email or Password" });
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) return res.status(400).json({ message: "Invalid email or password" });
 
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(400).json({ error: "Invalid email or password" });
+        let token = jwt.sign({ userID: user.id }, JWT_SECRET, { expiresIn: '1h' });
 
-    let token = jwt.sign({ userID: user.id }, JWT_SECRET, { expiresIn: '1h' });
-
-    res.json({ "token": token, "userID": user.id });
-
+        res.json({ "token": token, "userID": user.id });
+    } catch (error) {
+        console.error("Error logging in user:", error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
 };
 
 async function GetUsers(req,res) {
-    const tasks = await User.findAll();
-    res.json(tasks);
+    try {
+        const users = await User.findAll();
+        res.json(users);
+    } catch (error) {
+        console.error("Error getting users:", error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
 }
 
 async function CreateUser(req,res) {
+    try {
+        const {name, email, password} = req.body;
 
-    const {name, email, password} = req.body;
+        if ( email == undefined || name == undefined || password == undefined ){
+            return res.status(403).json({ message: 'Lacking Credentials'});
+        }
 
-    if ( email == undefined || name == undefined || password == undefined ){
-        return res.status(403).json({ message: 'Lacking Credentials'});
+        const user = await User.create(req.body);
+        res.status(201).json(user);
+    } catch (error) {
+        console.error("Error creating user:", error);
+        if (error.name === 'SequelizeValidationError') {
+            const errors = error.errors.map(err => err.message);
+            return res.status(400).json({ message: 'Validation failed', errors: errors }); 
+        }
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-
-    const task = await User.create(req.body);
-    res.status(201).json(task);
 }
 
 async function GetSpecificUser (req,res) {
-    const id = req.params.id;
-    const task = await User.findByPk(id);
-    task ? res.json(task) : res.status(404).json({error:"Not Found"});
+    try {
+        const id = req.params.id;
+        const user = await User.findByPk(id);
+        user ? res.json(user) : res.status(404).json({message:"Not Found"});
+    } catch (error) {
+        console.error("Error getting specific user:", error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
 }
 
 async function UpdateUser (req,res) {
-    const id = req.params.id;
-    const task = await User.findByPk(id);
-    if (!task) return res.status(404).json({error: "Not Found"});
-    await task.update(req.body);
-    res.json(task);
+    try {
+        const id = req.params.id;
+        const user = await User.findByPk(id);
+        if (!user) return res.status(404).json({message: "Not Found"});
+        await user.update(req.body);
+        res.json(user);
+    } catch (error) {
+        console.error("Error updating user:", error);
+        if (error.name === 'SequelizeValidationError') {
+            const errors = error.errors.map(err => err.message);
+            return res.status(400).json({ message: 'Validation failed', errors: errors }); 
+        }
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
 }
 
 async function DeleteUser (req,res) {
+    try {
+        const id = req.params.id;
+        if (id == undefined) return res.status(403).json({ message: 'Lacking Credentials'});
 
-    const id = req.params.id;
-    if (id == undefined) return res.status(403).json({ message: 'Lacking Credentials'});
-
-    const task = await User.findByPk(id);
-    if (!task) return res.status(404).json({error: "Not Found"});
-    await task.destroy();
-    res.json({ message: "deleted" });
+        const user = await User.findByPk(id);
+        if (!user) return res.status(404).json({message: "Not Found"});
+        await user.destroy();
+        res.json({ message: "deleted" });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
 }
-
-
 
 module.exports = { GetUsers, CreateUser, GetSpecificUser, UpdateUser , DeleteUser, LoginUser, RegisterUser };

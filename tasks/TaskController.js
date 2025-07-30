@@ -14,24 +14,17 @@ async function GetTasks (req,res) {
 
 async function CreateTasks (req,res) {
     try {
-        // Remove the manual title check here.
-        // Sequelize's model validations (allowNull, notEmptyOrWhitespace) are more robust.
-        // if (title == undefined) return res.status(403).json({ message: 'Lacking Title'});
+        req.body.userID = req.user.userID; 
 
-        req.body.userID = req.user.userID; // Set userID from authenticated user
-
-        // Sequelize will automatically run the validations defined in your Task model
         const task = await Task.create(req.body);
         res.status(201).json(task);
     } catch (error) {
         console.error("Error creating task:", error);
 
-        // --- IMPORTANT: Handle Sequelize Validation Errors ---
         if (error.name === 'SequelizeValidationError') {
             const errors = error.errors.map(err => err.message);
             return res.status(400).json({ message: errors, errors: errors });
         }
-        // Handle other potential errors (e.g., database connection issues, etc.)
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 }
@@ -49,8 +42,6 @@ async function GetSpecificTask (req,res) {
 
 async function UpdateTasks (req,res) {
     try {
-        // Remove the manual title check here as Sequelize handles it
-        // if (title == undefined) return res.status(403).json({ message: 'Lacking Title'});
 
         const id = req.params.id;
         const task = await Task.findOne({where:{ userID: req.user.userID, id }});
