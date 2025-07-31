@@ -50,7 +50,6 @@ async function UpdateTasks (req,res) {
             return res.status(404).json({error: "Not Found"});
         }
 
-        // Sequelize will apply validations here too
         await task.update(req.body);
         res.json(task);
     } catch (error) {
